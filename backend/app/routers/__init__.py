@@ -1,3 +1,2 @@
-from app.routers import auth, products, warehouses, inventory, receipts, deliveries, transfers, adjustments, movements, dashboard
+# Routers package — individual routers are imported directly in app/main.py
 
-__all__ = [auth, products, warehouses, inventory, receipts, deliveries, transfers, adjustments, movements, dashboard]
