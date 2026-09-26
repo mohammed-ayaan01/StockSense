@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { authApi } from '../api'
 import { useAuthStore } from '../store/authStore'
 import { Package } from 'lucide-react'
+import warehouseBg from '../assets/warehouse-bg.jpg'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -28,8 +29,19 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
+    <div
+      className="relative min-h-screen flex items-center justify-center p-4"
+      style={{
+        backgroundImage: `url(${warehouseBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      {/* Subtle static dark overlay for login-card readability */}
+      <div className="absolute inset-0" style={{ background: 'rgba(10,20,35,0.45)' }} />
+
+      <div className="relative z-10 bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
         <div className="flex items-center gap-3 mb-8">
           <div className="bg-blue-600 p-2 rounded-xl">
             <Package className="text-white" size={28} />
