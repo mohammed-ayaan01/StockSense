@@ -6,23 +6,146 @@
 
 ---
 
-## Quick Start
+## Running Locally (No Docker)
+
+This is how we are currently running the project — backend with a local Python virtualenv + SQLite, frontend with Node.
+
+### Prerequisites
+
+| Tool | Version |
+|---|---|
+| Python | 3.12+ |
+| Node.js | 18+ |
+| npm | 9+ |
+
+---
+
+### 1. Clone the repo
 
 ```bash
-# 1. Clone and configure
 git clone https://github.com/akhi-mohammmed-o7/StockSense-IARE.git
 cd StockSense-IARE
-cp .env.example .env  # edit if needed
-
-# 2. Start everything
-docker compose up --build
-
-# App:      http://localhost:5173
-# API:      http://localhost:8000
-# API Docs: http://localhost:8000/docs
 ```
 
-**Default login:** `admin@stocksense.com` / `admin123`
+---
+
+### 2. Backend (FastAPI + SQLite)
+
+```bash
+cd backend
+
+# Create and activate virtual environment
+python -m venv .venv
+.venv\Scripts\activate          # Windows
+# source .venv/bin/activate     # macOS / Linux
+
+# Install dependencies
+pip install -r requirements.txt
+
+# The backend/.env is already configured for SQLite (no Postgres needed):
+# DATABASE_URL=sqlite+aiosqlite:///stocksense.db
+
+# Run the dev server
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+> The app auto-creates the SQLite database (`backend/stocksense.db`) and seeds
+> default data (admin user, categories, units, warehouses) on first startup.
+
+Backend runs at → **http://localhost:8000**  
+API docs (Swagger UI) → **http://localhost:8000/docs**
+
+---
+
+### 3. Frontend (React + Vite)
+
+Open a **second terminal**:
+
+```bash
+cd frontend
+
+# Install dependencies (already done if node_modules exists)
+npm install
+
+# Start the dev server
+npm run dev
+```
+
+Frontend runs at → **http://localhost:5173**  
+*(If 5173 is occupied, Vite will automatically pick the next free port, e.g. 5174)*
+
+---
+
+### 4. Default Login
+
+```
+Email:    admin@stocksense.com
+Password: admin123
+```
+
+---
+
+## Environment Variables
+
+### `backend/.env` (SQLite — local dev)
+
+```env
+DATABASE_URL=sqlite+aiosqlite:///stocksense.db
+SECRET_KEY=your-super-secret-key-change-in-production-min-32-chars
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=480
+OTP_EXPIRE_MINUTES=10
+APP_ENV=development
+DEBUG=true
+FRONTEND_URL=http://localhost:5173
+```
+
+> **Note:** `aiosqlite` is used as the async SQLite driver. No Postgres or Docker required for local dev.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 19 + TypeScript + Vite 5 + Tailwind CSS 4 |
+| State | Zustand + TanStack Query |
+| Backend | FastAPI (Python 3.12) + Uvicorn |
+| Database | SQLite (local dev) / PostgreSQL (production/Docker) |
+| ORM | SQLAlchemy 2 (async) + Alembic |
+| Auth | JWT + bcrypt + OTP |
+
+---
+
+## Architecture
+
+```
+StockSense/
+├── backend/
+│   ├── .venv/              # Python virtual environment
+│   ├── app/
+│   │   ├── core/           # config, database, security, deps
+│   │   ├── models/         # SQLAlchemy ORM models
+│   │   ├── schemas/        # Pydantic request/response schemas
+│   │   ├── routers/        # API route handlers
+│   │   └── services/       # Business logic (transactional)
+│   ├── migrations/         # Alembic migrations
+│   ├── .env                # Local env (SQLite)
+│   ├── requirements.txt
+│   └── stocksense.db       # SQLite database file (auto-created)
+├── frontend/
+│   ├── node_modules/
+│   ├── src/
+│   │   ├── api/            # Axios API client
+│   │   ├── components/     # Reusable UI components
+│   │   ├── pages/          # Page-level components
+│   │   └── store/          # Zustand state management
+│   ├── package.json
+│   └── vite.config.ts
+├── .env                    # Root env (for Docker Compose / Postgres)
+├── .env.example
+└── docker-compose.yml      # Production / team setup (Postgres)
+```
 
 ---
 
@@ -42,47 +165,9 @@ docker compose up --build
 
 ---
 
-## Tech Stack
+## API Reference
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 18 + TypeScript + Vite + Tailwind CSS |
-| Backend | FastAPI (Python 3.12) |
-| Database | PostgreSQL 16 |
-| ORM | SQLAlchemy (async) + Alembic |
-| Auth | JWT + bcrypt + OTP |
-| Container | Docker + Docker Compose |
-
----
-
-## Architecture
-
-```
-StockSense-IARE/
-├── backend/          # FastAPI app
-│   ├── app/
-│   │   ├── core/     # config, database, security, deps
-│   │   ├── models/   # SQLAlchemy ORM models
-│   │   ├── schemas/  # Pydantic request/response schemas
-│   │   ├── routers/  # API route handlers
-│   │   └── services/ # Business logic (transactional operations)
-│   └── migrations/   # Alembic migrations
-├── frontend/         # React + TypeScript + Vite
-│   └── src/
-│       ├── api/      # Axios API client
-│       ├── components/ # Reusable UI components
-│       ├── pages/    # Page-level components
-│       └── store/    # Zustand state management
-└── docker-compose.yml
-```
-
----
-
-## API Documentation
-
-Full OpenAPI docs available at `http://localhost:8000/docs`
-
-### Key Endpoints
+Full Swagger UI at `http://localhost:8000/docs`
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -113,15 +198,25 @@ Full OpenAPI docs available at `http://localhost:8000/docs`
 
 ```bash
 cd backend
-pip install -r requirements.txt
+.venv\Scripts\activate
 pytest tests/ -v
 ```
 
 ---
 
-## Environment Variables
+## Docker (Production / Postgres)
 
-See `.env.example` for all required variables. Never commit `.env`.
+If you want to run with Postgres instead of SQLite:
+
+```bash
+# From the project root
+cp .env.example .env   # edit credentials if needed
+docker compose up --build
+
+# App:      http://localhost:5173
+# API:      http://localhost:8000
+# API Docs: http://localhost:8000/docs
+```
 
 ---
 
