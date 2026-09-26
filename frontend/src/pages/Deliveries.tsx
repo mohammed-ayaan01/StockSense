@@ -35,7 +35,7 @@ export default function Deliveries() {
   })
   const advanceMut = useMutation({
     mutationFn: (id: number) => deliveriesApi.advance(id),
-    onSuccess: (_, id) => {
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['deliveries'] })
       qc.invalidateQueries({ queryKey: ['inventory'] })
       qc.invalidateQueries({ queryKey: ['dashboard-kpis'] })

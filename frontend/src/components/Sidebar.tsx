@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Package, Warehouse, MapPin,
   ClipboardList, Truck, ArrowLeftRight, SlidersHorizontal,
-  History, LogOut, ChevronRight
+  History, LogOut
 } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
 
